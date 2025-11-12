@@ -1,15 +1,3 @@
-"""
-Smart Recipe Recommender with OpenAI Vision + Streamlit
-
-Run:
-    streamlit run recipe_vision_app.py
-
-Requirements:
-    pip install streamlit pillow openai python-dotenv
-Env:
-    OPENAI_API_KEY must be set in your environment or .env
-"""
-
 import streamlit as st
 from openai import OpenAI
 from PIL import Image
@@ -108,7 +96,7 @@ def recommend_recipes(ingredients_text: str, cuisine: str, allergies: str, taste
     prompt = f"""
 You are a professional chef and recipe generator.
 
-These ingredients were detected in the image:
+Detected ingredients (reference list):
 {ingredients_text}
 
 User preferences:
@@ -120,19 +108,25 @@ Task:
 Recommend 3 recipes that:
 - Use mainly the detected ingredients
 - Respect the allergies and avoid them completely
-- Try to match the cuisine and taste preference as much as possible
+- Match the cuisine and taste preference as much as possible
 
-For each recipe, output in this structure:
+Rules for formatting:
+1. Any ingredient in your recipe that is NOT present in the detected ingredients list must have a * directly after it.
+   Example: “1 tsp salt*”
+2. At the end of the entire output, add a short note:
+   “*Ingredients marked with * are not detected in the image and can be ordered from HungerStation Market.”
+
+Output format:
 
 ### 1. Recipe Name
-- one word tags(for example #salty, #italian.. etc)
+- one word 3 tags (for example #salty, #italian)
 - Short description (1–2 sentences)
 - Key ingredients (bullet list with quantities)
 - Steps (3–6 short steps)
-- If there's ingredients in recipe not shown in detected ingredients, put any special sign and a note that you can order it from hungerstation market.
 
 Use clear markdown formatting.
 """
+
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -141,6 +135,7 @@ Use clear markdown formatting.
         ],
     )
     return completion.choices[0].message.content.strip()
+
 
 
 # ---------- MAIN ACTION ----------
